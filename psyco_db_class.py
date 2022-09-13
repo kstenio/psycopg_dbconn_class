@@ -4,16 +4,16 @@
 # Copyright (c) 2022 Kleydson Stenio <kleydson.stenio@gmail.com>.
 #
 # This program is free software: you can redistribute it and/or modify
-# it under the terms of the GNU Affero General Public License as published
+# it under the terms of the GNU Lesser General Public License as published
 # by the Free Software Foundation, either version 3 of the License, or
 # (at your option) any later version.
 #
 # This program is distributed in the hope that it will be useful,
 # but WITHOUT ANY WARRANTY; without even the implied warranty of
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-# GNU Affero General Public License for more details.
+# GNU Lesser General Public License for more details.
 #
-# You should have received a copy of the GNU Affero General Public License
+# You should have received a copy of the GNU Lesser General Public License
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 # Imports
@@ -64,11 +64,19 @@ class DataBaseConnection(object):
 		if candidate_file.is_file():
 			with candidate_file.open('r+') as js:
 				loaded_config = json.load(js)
-			self.__config['db_name'] = loaded_config['name']
-			self.__config['db_host'] = loaded_config['host']
-			self.__config['db_port'] = loaded_config['port']
-			self.__config['db_user'] = loaded_config['user']
-			self.__config['db_pass'] = loaded_config['pass']
+			# With json file loaded, we must guarantee that the correct fields exists
+			keys = ('db_name', 'db_host', 'db_port', 'db_user', 'db_pass')
+			if all([key in keys for key in loaded_config]):
+				self.__config['db_name'] = loaded_config['name']
+				self.__config['db_host'] = loaded_config['host']
+				self.__config['db_port'] = loaded_config['port']
+				self.__config['db_user'] = loaded_config['user']
+				self.__config['db_pass'] = loaded_config['pass']
+			else:
+				raise ValueError(
+					f'The json file ({candidate_file.name}) does not have the '
+					f'needed/correct fields to connect into the DB .\n'
+					f'Needed values: {str(keys)}')
 		else:
 			raise FileNotFoundError(
 				f'Could not find the _{candidate_file.absolute()}_ file')
