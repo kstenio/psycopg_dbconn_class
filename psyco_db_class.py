@@ -20,8 +20,9 @@
 try:
 	import psycopg2
 except ImportError as ie:
-	print('Please install psycopg2-binary library in order to use this class.\n'
-	      'Check: https://pypi.org/project/psycopg2-binary/')
+	print(
+		'Please install psycopg2-binary library in order to use this class.\n'
+		'Check: https://pypi.org/project/psycopg2-binary/')
 	raise ie
 else:
 	import json
@@ -38,7 +39,8 @@ class DataBaseConnection(object):
 		'db_user': '',
 		'db_pass': ''}
 	
-	def __init__(self, config_file: Path = None, auto_config: bool = True, auto_connect: bool = False):
+	def __init__(self, config_file: Path = None, auto_config: bool = True,
+	             auto_connect: bool = False):
 		self.cursor = None
 		self.connection = None
 		self.connected = False
@@ -47,7 +49,8 @@ class DataBaseConnection(object):
 			if auto_connect:
 				self.connect()
 	
-	def update_config_values(self, name: str, host: str, port: str, user: str, password: str):
+	def update_config_values(self, name: str, host: str, port: str, user: str,
+	                         password: str):
 		self.__config['db_name'] = name
 		self.__config['db_host'] = host
 		self.__config['db_port'] = port
@@ -109,17 +112,21 @@ class DataBaseConnection(object):
 				'Please, setup connection parameters before trying to connect to a server! '
 				'Tip: run the methods update_config_values or update_config_values_from_json')
 	
-	def run_query(self, query: str):
+	def run_query(self, query: str, values: list, do_print: bool = False):
 		if self.connected:
 			try:
-				self.cursor.execute(query)
+				if len(values) > 0:
+					self.cursor.execute(query, values)
+				else:
+					self.cursor.execute(query)
 			except psycopg2.OperationalError as err:
 				print(f'Could not execute query _{query}_')
 				raise err
 			else:
 				self.connection.commit()
-				print(
-					f'Query **{query}** executed in _{self.__config["db_name"]}_')
+				if do_print:
+					print(
+						f'Query **{query}** executed in _{self.__config["db_name"]}_')
 		else:
 			raise ConnectionError('There is no Database connected')
 	
