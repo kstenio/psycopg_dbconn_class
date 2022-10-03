@@ -70,11 +70,11 @@ class DataBaseConnection(object):
 			# With json file loaded, we must guarantee that the correct fields exists
 			keys = ('db_name', 'db_host', 'db_port', 'db_user', 'db_pass')
 			if all([key in keys for key in loaded_config]):
-				self.__config['db_name'] = loaded_config['name']
-				self.__config['db_host'] = loaded_config['host']
-				self.__config['db_port'] = loaded_config['port']
-				self.__config['db_user'] = loaded_config['user']
-				self.__config['db_pass'] = loaded_config['pass']
+				self.__config['db_name'] = loaded_config['db_name']
+				self.__config['db_host'] = loaded_config['db_host']
+				self.__config['db_port'] = loaded_config['db_port']
+				self.__config['db_user'] = loaded_config['db_user']
+				self.__config['db_pass'] = loaded_config['db_pass']
 			else:
 				raise ValueError(
 					f'The json file ({candidate_file.name}) does not have the '
@@ -116,6 +116,7 @@ class DataBaseConnection(object):
 		if self.connected:
 			try:
 				if len(values) > 0:
+					# TODO: update this command with psycopg2.sql.SQL
 					self.cursor.execute(query, values)
 				else:
 					self.cursor.execute(query)
