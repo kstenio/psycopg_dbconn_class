@@ -20,4 +20,4 @@
 from .src.psycopg_dbconn_class import DataBaseConnection
 
 # Lib current version
-__version__ = '0.0.1'
+__version__ = '0.0.2'

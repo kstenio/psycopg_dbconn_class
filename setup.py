@@ -31,8 +31,8 @@ except FileNotFoundError:
 # Setuptools
 setup(
 	name='psycopg_dbconn_class',
-	version='0.0.1',
-	description='A simple class to better handle database connections using psycopg2 (PostgreSQL)',
+	version='0.0.2',
+	description='A simple class to handle database connections using psycopg2 (PostgreSQL)',
 	package_dir={'': 'app'},
 	packages=find_packages(where='app'),
 	long_description=long_description,
@@ -58,7 +58,7 @@ setup(
 # 03) Use command `twine check dist/*` to check if all files are fine;
 # 04) Package can also be installed locally. In this case, use command `pip install .` to test it;
 # 05) Test passed? Now create user and API key for TestPyPI repository (https://test.pypi.org/);
-# 06) Now make sure the env is set, saving API kei in .pypirc;
+# 06) Now make sure the env is set, saving API key in .pypirc;
 # 07) For more info on that, check the website: https://packaging.python.org/en/latest/specifications/pypirc/;
 # 05) To upload the package into the TestPyPI repository, use command `twine upload -r testpypi dist/*`;
 # 08) Now, we can use pip to check if package downloads fine: `pip install -i https://test.pypi.org/simple/ PKG_NAME`;

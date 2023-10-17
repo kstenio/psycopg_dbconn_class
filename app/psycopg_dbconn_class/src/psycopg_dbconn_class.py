@@ -34,9 +34,28 @@ else:
 # Main Class
 class DataBaseConnection(object):
 	__default_keys = ('DBN', 'DBU', 'DBK', 'DBH', 'DBP')
+	__default_cursor = ''
 	
-	def __init__(self, config_file: Path = None, auto_config: bool = True, auto_config_mode: str = 'env', auto_connect: bool = False):
+	def __init__(
+			self, config_file: Path = None, auto_config: bool = True, auto_config_mode: str = 'env',
+			auto_connect: bool = False, default_cursor: str = ''):
+		"""
+		DataBaseConnection constructor
+		:param config_file: location (pathlib) of JSON config file
+		:param auto_config: if the config parameters will be loaded on object creation
+		:param auto_config_mode: mode for auto config, 'env' or 'json'
+		:param auto_connect: if class will try to connect on creation
+		:param default_cursor: default cursor for queries return, 'realdict' (default) or 'dict'
+		"""
+		# Checks errors
+		if not isinstance(default_cursor, str):
+			raise ValueError(
+				f'Invalid type for cursor_type parameter. '
+				f'Expected *str*, found **{default_cursor.__class__.__name__}**.')
+		if default_cursor.lower() not in ('', 'realdict', 'dict'):
+			raise ValueError('Invalid value for cursor_type parameter. Accepted values are "realdict" and "dict".')
 		self.__config = {'db_name': '', 'db_host': '', 'db_port': '', 'db_user': '', 'db_pass': ''}
+		self.__default_cursor = default_cursor
 		self.cursor = None
 		self.connection = None
 		self.connected = False
@@ -49,6 +68,15 @@ class DataBaseConnection(object):
 				self.connect()
 	
 	def update_config_values(self, name: str, host: str, port: str, user: str, password: str):
+		"""
+		Method for handling change of connection/config values
+		:param name: name of database
+		:param host: ip/host of database
+		:param port: database port
+		:param user: database user
+		:param password: database password
+		:return:
+		"""
 		self.__config['db_name'] = name
 		self.__config['db_host'] = host
 		self.__config['db_port'] = port
@@ -56,9 +84,20 @@ class DataBaseConnection(object):
 		self.__config['db_pass'] = password
 	
 	def update_config_value(self, key: str, value: str):
+		"""
+		Method for updating a single config value of object
+		:param key: the key to update
+		:param value: the value of the key
+		:return:
+		"""
 		self.__config[key] = value
 	
 	def update_config_values_from_json(self, config_file: Path = None):
+		"""
+		Method for updating config values from JSON
+		:param config_file: the JSON file Path
+		:return:
+		"""
 		# Checks if user entered config_file parameter
 		if config_file is None:
 			candidate_file = Path(__file__).parent.joinpath('conn.json')
@@ -86,6 +125,12 @@ class DataBaseConnection(object):
 				f'Could not find the _{candidate_file.absolute()}_ file')
 	
 	def update_config_values_from_env(self, env_keys: tuple = None):
+		"""
+		Method for updating config values from environment variables
+		:param env_keys: the keys being used in environment. Tuple is loaded in order:
+			db_name, db_user, db_pass, db_host, db_port (0, 1, 2, 3, 4)
+		:return:
+		"""
 		# Checks env keys
 		if env_keys is None:
 			env_keys = self.__default_keys
@@ -98,17 +143,16 @@ class DataBaseConnection(object):
 		self.__config['db_port'] = os.environ.get(env_keys[4])
 	
 	def connect(self, cursor_type: str = 'realdict'):
-		# Checks errors
-		if not isinstance(cursor_type, str):
-			raise ValueError(
-				f'Invalid type for cursor_type parameter. '
-				f'Expected *str*, found **{cursor_type.__class__.__name__}**.')
-		if cursor_type.lower() not in ('realdict', 'dict'):
-			raise ValueError('Invalid value for cursor_type parameter. Accepted values are "realdict" and "dict".')
+		"""
+		Simple method for database connection (object must have proper config before connecting)
+		:param cursor_type: type of cursor, being 'realdict' or 'dict'
+		:return:
+		"""
 		if not self.connected:
 			# Check if all parameters were set before connecting
 			if all([self.__config[x] != '' for x in self.__config]):
 				# All fine
+				cursor_type = self.__default_cursor if self.__default_cursor else cursor_type
 				cfactory = psycopg2.extras.RealDictCursor if cursor_type == 'realdict' else psycopg2.extras.DictCursor
 				try:
 					connection = psycopg2.connect(
@@ -138,6 +182,14 @@ class DataBaseConnection(object):
 					'Tip: run the methods update_config_values or update_config_values_from_json')
 	
 	def run_query(self, query: str, values: list = None, force: bool = True, do_print: bool = False):
+		"""
+		Method for running queries on connected database. Obs.: This does not return values
+		:param query: the query itself
+		:param values: values to pass to query
+		:param force: will attempt to force database connection
+		:param do_print: will print returned messages (if there are any)
+		:return:
+		"""
 		if force:
 			if not self.connected:
 				self.connect()
@@ -160,6 +212,14 @@ class DataBaseConnection(object):
 			raise ConnectionError('There is no Database connected')
 	
 	def run_read_query(self, query: str, values: list = None, force: bool = True, fetch_all: bool = False):
+		"""
+		Similar to run_query, but returns values obtained from database
+		:param query: the query itself
+		:param values: values to pass to query
+		:param force: will attempt to force database connection
+		:param fetch_all: catches all rows (or just a single one)
+		:return:
+		"""
 		if force:
 			if not self.connected:
 				self.connect()
@@ -190,6 +250,10 @@ class DataBaseConnection(object):
 		raise ConnectionError('There is no Database connected')
 	
 	def close(self):
+		"""
+		Simple method for closing the database connection
+		:return:
+		"""
 		if self.connected:
 			self.connection.close()
 			self.connected = False
