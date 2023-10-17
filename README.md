@@ -25,7 +25,7 @@ By default, parameters for connecting into the server are expected do be in envi
 you may also enter parameters manually.
 
 ```python
-from app.psycopg_dbconn_class.src.psycopg_dbconn_class import DataBaseConnection
+from psycopg_dbconn_class import DataBaseConnection
 
 DB = DataBaseConnection(auto_config=False)
 DB.update_config_values(name='db', host='127.0.0.0', port="15432", user="postgres", password="PostgresPass")
